@@ -1,66 +1,88 @@
-# RAG Chat Application Load Testing
+# Load Testing Framework for Dandilion AI
 
-This repository contains a k6 script for load testing the RAG chat application located at `https://dev.worldcc.dandilion.ai/`.
+This project contains a K6-based load testing framework for the Dandilion AI application.
 
-## Prerequisites
+## Structure
 
-- [k6](https://k6.io/docs/getting-started/installation/) installed on your machine
+- `k6_config.js` - Configuration for K6 metrics, options, and shared data
+- `k6_test.js` - Main test script with user management testing
+- `run_load_test.sh` - Shell script to execute the load test and save results
+
+## Test Iterations
+
+The load test is designed to be executed in iterations, focusing on different aspects of the application:
+
+### Iteration 1: User Management
+- Register a new user with a unique `loadtest_` prefix
+- Map the new user to role_id 1
+- Login with the newly created user
+- Delete the user
+
+### Iteration 2: Interaction Workflow
+- Register a new user with a unique `loadtest_` prefix
+- Map the new user to role_id 1
+- Login with the newly created user
+- Create a new interaction with a random query
+- Generate citations (using Server-Sent Events)
+- Generate response (using Server-Sent Events)
+- Get interactions to verify interaction creation
+- Generate followup questions
+- Delete the interaction
+- Delete associated sources
+- Delete the user
+
+## API Endpoints Tested
+
+The load test covers the following API endpoints:
+
+### User Management
+- `POST /api/users/` - Register a new user
+- `POST /api/users/{user_id}/roles` - Map user to role
+- `POST /api/users/authenticate` - User login
+- `DELETE /api/users/{id}` - Delete user
+
+### Interaction Management
+- `POST /api/interactions/` - Create a new interaction
+- `POST /api/interactions/generate_citations` - Generate citations (Server-Sent Events)
+- `POST /api/interactions/generate_response` - Generate response (Server-Sent Events)
+- `GET /api/interactions/by_user/{user_id}` - Get user's interactions
+- `POST /api/interactions/generate_followup` - Generate followup questions
+- `DELETE /api/interactions/{interaction_id}` - Delete an interaction
+- `DELETE /api/sources/{source_id}` - Delete associated sources
+
+## Running the Tests
+
+To run the load tests:
+
+```bash
+# Make the shell script executable if needed
+chmod +x run_load_test.sh
+
+# Run the load test
+./run_load_test.sh
+```
+
+The results will be stored in a timestamped directory under the `results/` folder.
+
+## Switching Iterations
+
+To switch between test iterations, edit the `k6_test.js` file and change the `iterationToRun` value:
+
+```javascript
+// Choose which iteration to run
+const iterationToRun = 1; // Change to 2 for Iteration 2
+```
 
 ## Configuration
 
-The load test script (`k6_test.js`) is configured to:
+You can modify the load test parameters in `k6_config.js`:
 
-1. Log in to the application using provided credentials
-2. Perform chat searches with randomly selected queries
-3. Scale up to 50 virtual users (VUs) over time
-4. Collect and report metrics on login latency, search latency, and success rates
+- VU (Virtual User) count and ramp-up periods
+- Duration of each test stage
+- Performance thresholds
+- Base URL for the application
 
-## Running the Load Test
+## Prerequisites
 
-To run the load test:
-
-```bash
-k6 run k6_test.js
-```
-
-### Advanced Usage
-
-To adjust the number of virtual users or test duration, you can modify the options in the `k6_test.js` file or override them with command-line arguments:
-
-```bash
-# Run with a specific number of VUs
-k6 run --vus 25 --duration 2m k6_test.js
-
-# Export results to a JSON file
-k6 run --out json=results.json k6_test.js
-```
-
-## Metrics Collected
-
-The test collects the following metrics:
-
-- `login_latency`: Time taken to complete the login process
-- `search_latency`: Time taken to complete a search query
-- `search_success_rate`: Percentage of successful search requests
-- `failed_requests`: Count of failed requests (login or search)
-
-## Customizing Test Behavior
-
-To modify the test behavior:
-
-1. Update the credentials in the script if needed
-2. Add/modify the search queries in the `queries` array
-3. Adjust the test stages in the `options` configuration
-4. Modify thresholds based on your performance requirements
-
-## Troubleshooting
-
-If the test fails to login:
-- Verify that the credentials are correct
-- Inspect the network traffic to ensure the login endpoint is correctly configured
-- Check if CSRF token extraction is needed
-
-If search requests fail:
-- Verify that the search API endpoint is correct
-- Check the format of the search payload
-- Ensure the authentication is preserved between requests 
+- [K6](https://k6.io/docs/getting-started/installation/) must be installed
+- Network access to the target environment 

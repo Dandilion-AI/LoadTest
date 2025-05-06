@@ -12,7 +12,7 @@ echo "Starting load test at $(date)"
 echo "Results will be saved to: $results_dir"
 
 # Run k6 with the specified test file
-k6 run --out json=$results_dir/raw_results.json k6_test.js
+k6 run --out json=$results_dir/raw_results.json k6_test.js >$results_dir/loadtest.log 2>&1
 
 # Display completion message
 echo "Load test completed at $(date)"

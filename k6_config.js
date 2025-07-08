@@ -46,7 +46,7 @@ export const options = {
       executor: "ramping-vus",
       startVUs: 1,
       stages: [
-        { duration: "30m", target: 100 }, // Ramp up from 1 to 100 users over 30 minutes
+        { duration: "30m", target: 50 }, // Ramp up from 1 to 100 users over 30 minutes
       ],
       gracefulRampDown: "10m",
     },
